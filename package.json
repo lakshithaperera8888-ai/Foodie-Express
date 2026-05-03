@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "foodie-express-backend",
   "version": "1.0.0",
   "description": "Foodie Express Backend API",
@@ -7,9 +7,6 @@
     "start": "node backend/server.js",
     "dev": "nodemon backend/server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.9.0",
