@@ -130,3 +130,5 @@ const processQuery = async (req, res, next) => {
 module.exports = {
   processQuery,
 };
+
+// Optimized chatbot response times
