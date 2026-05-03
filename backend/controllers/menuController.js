@@ -60,18 +60,14 @@ const createMenuItem = async (req, res, next) => {
         redirectUrl
       );
 
-      for (const user of optedInUsers) {
-        console.log(`📨 Sending beautiful email to: ${user.email}`);
-        try {
-          await sendEmail({
-            email: user.email,
-            subject: `✨ New Delight: ${name} is now at ${restaurant.name}!`,
-            html: emailHtml,
-          });
-        } catch (err) {
-          console.error(`❌ Email failed for ${user.email}:`, err.message);
-        }
-      }
+      // Send emails in the background so the user doesn't wait
+      optedInUsers.forEach(user => {
+        sendEmail({
+          email: user.email,
+          subject: `✨ New Delight: ${name} is now at ${restaurant.name}!`,
+          html: emailHtml,
+        }).catch(err => console.error(`❌ Background email failed for ${user.email}:`, err.message));
+      });
     } else {
       console.log('ℹ️ No users have email notifications enabled.');
     }
@@ -189,17 +185,14 @@ const deleteMenuItem = async (req, res, next) => {
       if (optedInUsers.length > 0) {
         const deletionHtml = getDeletedFoodTemplate(itemName, restaurantName);
         
-        for (const user of optedInUsers) {
-          try {
-            await sendEmail({
-              email: user.email,
-              subject: `Menu Update: Farewell to ${itemName}`,
-              html: deletionHtml,
-            });
-          } catch (err) {
-            console.error(`❌ Deletion email failed for ${user.email}:`, err.message);
-          }
-        }
+        // Send emails in the background so the user doesn't wait
+        optedInUsers.forEach(user => {
+          sendEmail({
+            email: user.email,
+            subject: `Menu Update: Farewell to ${itemName}`,
+            html: deletionHtml,
+          }).catch(err => console.error(`❌ Background deletion email failed for ${user.email}:`, err.message));
+        });
       }
 
       res.json({ message: 'Menu item removed' });
