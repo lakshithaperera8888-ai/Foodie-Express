@@ -188,3 +188,5 @@ const ExploreScreen = ({ navigation }) => {
 
 
 export default ExploreScreen;
+
+// Updated recommendation logic layout
