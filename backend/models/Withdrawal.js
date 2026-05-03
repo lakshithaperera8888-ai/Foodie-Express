@@ -12,8 +12,8 @@ const withdrawalSchema = mongoose.Schema(
       required: true,
     },
     method: {
-      type: { type: String, enum: ['card', 'paypal'] },
-      details: Object,
+      type: String,
+      enum: ['card', 'paypal'],
     },
     status: {
       type: String,
