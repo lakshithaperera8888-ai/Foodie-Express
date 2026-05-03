@@ -44,14 +44,14 @@ const CartScreen = ({ navigation }) => {
 
   if (cart.length === 0) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6">
+      <SafeAreaView className="flex-1 bg-gray-50 items-center justify-center">
         <Text className="text-2xl font-bold text-secondary mb-2">Your cart is empty</Text>
-        <Text className="text-gray-500 text-center mb-8">Looks like you haven't added anything to your cart yet.</Text>
+        <Text className="text-gray-500 mb-6">Add items from a restaurant to get started</Text>
         <TouchableOpacity 
-          onPress={() => navigation.navigate('ExploreTab')}
-          className="bg-primary px-8 py-4 rounded-full shadow-lg shadow-primary/20"
+          onPress={() => navigation.navigate('HomeTab')}
+          className="bg-primary px-8 py-3 rounded-2xl"
         >
-          <Text className="text-white font-bold">Go Back Shopping</Text>
+          <Text className="text-white font-bold text-lg">Browse Restaurants</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -59,53 +59,48 @@ const CartScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
-      <View className="px-6 py-4 flex-row items-center justify-between bg-white border-b border-gray-100">
-        <TouchableOpacity 
-          onPress={() => navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Main')} 
-          className="w-10 h-10 bg-gray-50 rounded-full items-center justify-center"
-        >
+      <View className="px-6 py-4 flex-row items-center justify-between border-b border-gray-100 bg-white">
+        <TouchableOpacity onPress={() => navigation.goBack()} className="w-10 h-10 bg-gray-50 rounded-full items-center justify-center">
           <ArrowLeft size={20} color="black" />
         </TouchableOpacity>
         <Text className="text-xl font-bold text-secondary">My Cart</Text>
         <TouchableOpacity onPress={clearCart}>
-          <Text className="text-red-500 font-medium">Clear</Text>
+          <Text className="text-primary font-semibold">Clear</Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1 px-6 pt-6" showsVerticalScrollIndicator={false}>
-        {cart.map(item => (
-          <CartItem key={item._id} item={item} />
-        ))}
-        
-        <View className="mt-6 bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-32">
-          <Text className="text-lg font-bold text-secondary mb-4">Summary</Text>
-          <View className="flex-row justify-between mb-2">
-            <Text className="text-gray-500">Subtotal</Text>
-            <Text className="text-secondary font-bold">${cartTotal.toFixed(2)}</Text>
+      <FlatList
+        data={cart}
+        keyExtractor={(item) => item._id}
+        renderItem={({ item }) => <CartItem item={item} />}
+        contentContainerStyle={{ padding: 24 }}
+        ListFooterComponent={
+          <View className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 mb-4">
+            <Text className="text-lg font-bold text-secondary mb-4">Order Summary</Text>
+            <View className="flex-row justify-between mb-2">
+              <Text className="text-gray-500">Subtotal</Text>
+              <Text className="font-semibold">${cartTotal.toFixed(2)}</Text>
+            </View>
+            <View className="flex-row justify-between mb-2">
+              <Text className="text-gray-500">Delivery Fee</Text>
+              <Text className="font-semibold">$2.50</Text>
+            </View>
+            <View className="border-t border-gray-100 mt-2 pt-2 flex-row justify-between">
+              <Text className="font-bold text-secondary">Total</Text>
+              <Text className="font-bold text-primary text-lg">${(cartTotal + 2.50).toFixed(2)}</Text>
+            </View>
           </View>
-          <View className="flex-row justify-between mb-2">
-            <Text className="text-gray-500">Delivery Fee ({new Set(cart.map(i => i.restaurantId?._id || i.restaurantId)).size} x $2.50)</Text>
-            <Text className="text-secondary font-bold">${(new Set(cart.map(i => i.restaurantId?._id || i.restaurantId)).size * 2.50).toFixed(2)}</Text>
-          </View>
-          <View className="flex-row justify-between mt-4 pt-4 border-t border-gray-100">
-            <Text className="text-lg font-bold text-secondary">Total</Text>
-            <Text className="text-lg font-bold text-primary">
-              ${(cartTotal + (new Set(cart.map(i => i.restaurantId?._id || i.restaurantId)).size * 2.50)).toFixed(2)}
-            </Text>
-          </View>
-        </View>
-      </ScrollView>
+        }
+      />
 
-      <View className="absolute bottom-10 left-6 right-6">
+      <View className="px-6 pb-6 bg-white border-t border-gray-100">
         <TouchableOpacity 
           onPress={() => navigation.navigate('Checkout')}
-          className="bg-secondary flex-row items-center justify-between p-5 rounded-3xl shadow-2xl shadow-secondary/40"
+          className="bg-primary py-4 rounded-2xl flex-row items-center justify-center mt-4"
         >
-          <View className="flex-row items-center">
-            <CreditCard size={20} color="white" />
-            <Text className="text-white font-bold text-lg ml-3">Checkout</Text>
-          </View>
-          <ChevronRight size={24} color="white" />
+          <CreditCard size={20} color="white" />
+          <Text className="text-white font-bold text-lg ml-2">Proceed to Checkout</Text>
+          <ChevronRight size={20} color="white" />
         </TouchableOpacity>
       </View>
     </SafeAreaView>

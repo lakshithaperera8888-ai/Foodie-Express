@@ -55,76 +55,83 @@ const OrderTrackingScreen = ({ route, navigation }) => {
         <TouchableOpacity onPress={() => navigation.navigate('Main')} className="w-10 h-10 bg-gray-50 rounded-full items-center justify-center">
           <ArrowLeft size={20} color="black" />
         </TouchableOpacity>
-        <View className="ml-4">
-          <Text className="text-xl font-bold text-secondary">Track Order</Text>
-          <Text className="text-gray-400 text-xs">#{orderId.substring(0, 8).toUpperCase()}</Text>
-        </View>
+        <Text className="text-xl font-bold text-secondary ml-4">Order Tracking</Text>
       </View>
 
-      <ScrollView className="flex-1 px-6 pt-8" showsVerticalScrollIndicator={false}>
-        <View className="items-center mb-10">
-          <View className="bg-orange-50 w-24 h-24 rounded-full items-center justify-center mb-4">
-            <Clock size={40} color="#ff5a5f" />
-          </View>
-          <Text className="text-2xl font-bold text-secondary">Estimated Arrival</Text>
-          <Text className="text-primary text-3xl font-bold mt-2">25 - 35 min</Text>
+      <ScrollView className="flex-1 px-6 pt-6" showsVerticalScrollIndicator={false}>
+        {/* Order Info */}
+        <View className="bg-gray-50 p-4 rounded-2xl mb-6">
+          <Text className="text-sm text-gray-500 mb-1">Order ID</Text>
+          <Text className="font-bold text-secondary">#{order?._id?.slice(-8).toUpperCase()}</Text>
+          <Text className="text-sm text-gray-500 mt-2 mb-1">Restaurant</Text>
+          <Text className="font-bold text-secondary">{order?.restaurant?.name}</Text>
         </View>
 
-        <View className="bg-gray-50 p-6 rounded-[40px] mb-10">
-          {statusSteps.map((step, index) => (
-            <View key={index} className="flex-row mb-6 last:mb-0">
-              <View className="items-center mr-4">
-                <View className={`w-8 h-8 rounded-full items-center justify-center ${index <= currentIndex ? 'bg-primary' : 'bg-gray-200'}`}>
-                  {index <= currentIndex ? <CheckCircle2 size={16} color="white" /> : <View className="w-2 h-2 bg-white rounded-full" />}
+        {/* Status Steps */}
+        <Text className="text-base font-bold text-secondary mb-4">Order Status</Text>
+        <View className="mb-6">
+          {statusSteps.map((step, index) => {
+            const isCompleted = index <= currentIndex;
+            const isCurrent = index === currentIndex;
+            return (
+              <View key={step.status} className="flex-row items-start mb-4">
+                <View className="items-center mr-4">
+                  <View className={`w-8 h-8 rounded-full items-center justify-center ${isCompleted ? 'bg-primary' : 'bg-gray-200'}`}>
+                    {isCompleted ? (
+                      <CheckCircle2 size={16} color="white" />
+                    ) : (
+                      <View className="w-3 h-3 rounded-full bg-gray-400" />
+                    )}
+                  </View>
+                  {index < statusSteps.length - 1 && (
+                    <View className={`w-0.5 h-8 mt-1 ${isCompleted ? 'bg-primary' : 'bg-gray-200'}`} />
+                  )}
                 </View>
-                {index < statusSteps.length - 1 && (
-                  <View className={`w-0.5 h-12 ${index < currentIndex ? 'bg-primary' : 'bg-gray-200'}`} />
-                )}
+                <View className="flex-1 pt-1">
+                  <Text className={`font-bold ${isCurrent ? 'text-primary' : isCompleted ? 'text-secondary' : 'text-gray-400'}`}>
+                    {step.title}
+                  </Text>
+                  {isCurrent && (
+                    <Text className="text-gray-500 text-sm mt-1">Current status</Text>
+                  )}
+                </View>
               </View>
-              <View className="pt-1">
-                <Text className={`font-bold ${index <= currentIndex ? 'text-secondary' : 'text-gray-300'}`}>{step.title}</Text>
-                {index === currentIndex && <Text className="text-gray-400 text-xs mt-1">We are currently here</Text>}
+            );
+          })}
+        </View>
+
+        {/* Delivery Person Info */}
+        {order?.deliveryPerson && (
+          <View className="bg-gray-50 p-4 rounded-2xl mb-6">
+            <Text className="text-base font-bold text-secondary mb-3">Delivery Person</Text>
+            <View className="flex-row items-center">
+              <Image
+                source={{ uri: order.deliveryPerson.profileImage || 'https://via.placeholder.com/50' }}
+                className="w-12 h-12 rounded-full"
+              />
+              <View className="ml-3 flex-1">
+                <Text className="font-bold text-secondary">{order.deliveryPerson.name}</Text>
+                <Text className="text-gray-500 text-sm">Your delivery driver</Text>
               </View>
             </View>
-          ))}
-        </View>
-
-        <View className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex-row items-center mb-20">
-          <Image 
-            source={{ uri: 'https://ui-avatars.com/api/?name=' + encodeURIComponent(order?.restaurant?.name) }} 
-            className="w-14 h-14 rounded-2xl"
-          />
-          <View className="flex-1 ml-4">
-            <Text className="text-lg font-bold text-secondary">{order?.restaurant?.name}</Text>
-            <Text className="text-gray-400 text-sm">Restaurant</Text>
           </View>
-          <TouchableOpacity className="w-10 h-10 bg-green-50 rounded-full items-center justify-center mr-2">
-            <Phone size={20} color="#4ade80" />
-          </TouchableOpacity>
-          <TouchableOpacity className="w-10 h-10 bg-blue-50 rounded-full items-center justify-center">
-            <MessageSquare size={20} color="#60a5fa" />
-          </TouchableOpacity>
+        )}
+
+        {/* Order Items */}
+        <View className="bg-gray-50 p-4 rounded-2xl mb-8">
+          <Text className="text-base font-bold text-secondary mb-3">Order Items</Text>
+          {order?.items?.map((item, index) => (
+            <View key={index} className="flex-row justify-between mb-2">
+              <Text className="text-gray-600">{item.name} x{item.quantity}</Text>
+              <Text className="font-semibold">${(item.price * item.quantity).toFixed(2)}</Text>
+            </View>
+          ))}
+          <View className="border-t border-gray-200 mt-2 pt-2 flex-row justify-between">
+            <Text className="font-bold text-secondary">Total</Text>
+            <Text className="font-bold text-primary">${order?.totalAmount?.toFixed(2)}</Text>
+          </View>
         </View>
       </ScrollView>
-
-      {order?.orderStatus === 'placed' && (
-        <View className="absolute bottom-10 left-6 right-6">
-          <TouchableOpacity 
-            onPress={async () => {
-              try {
-                await api.put(`/orders/${orderId}/cancel`);
-                Alert.alert('Success', 'Order cancelled');
-                navigation.navigate('Main');
-              } catch (e) {
-                Alert.alert('Error', 'Cannot cancel now');
-              }
-            }}
-            className="bg-white border-2 border-red-500 p-5 rounded-3xl items-center"
-          >
-            <Text className="text-red-500 font-bold text-lg">Cancel Order</Text>
-          </TouchableOpacity>
-        </View>
-      )}
     </SafeAreaView>
   );
 };

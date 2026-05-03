@@ -46,9 +46,10 @@ const CheckoutScreen = ({ navigation }) => {
       return;
     }
 
+    // Cash on delivery
     setLoading(true);
     try {
-      // ... (existing order placement logic for Cash)
+      // Group items by restaurant
       const groupedItems = cart.reduce((acc, item) => {
         const resId = item.restaurantId?._id || item.restaurantId;
         if (!acc[resId]) acc[resId] = [];
@@ -57,11 +58,11 @@ const CheckoutScreen = ({ navigation }) => {
       }, {});
 
       const restaurantIds = Object.keys(groupedItems);
-      
+
       for (const resId of restaurantIds) {
         const resItems = groupedItems[resId];
         const resSubtotal = resItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        
+
         const orderData = {
           restaurant: resId,
           items: resItems.map(item => ({
@@ -74,32 +75,27 @@ const CheckoutScreen = ({ navigation }) => {
           orderType,
           deliveryAddress: orderType === 'delivery' ? address : '',
           paymentMethod: 'cash',
+          paymentStatus: 'pending',
         };
 
         await api.post('/orders', orderData);
       }
 
       clearCart();
-      Alert.alert('Success', 'Order placed successfully!', [
-        { 
-          text: 'Great!', 
-          onPress: () => navigation.navigate('Main', { screen: 'OrdersTab' }) 
-        }
-      ]);
+      navigation.navigate('Main', { screen: 'OrdersTab' });
     } catch (error) {
-      Alert.alert('Checkout Error', error.response?.data?.message || error.message);
+      Alert.alert('Error', error.response?.data?.message || 'Failed to place order');
     } finally {
       setLoading(false);
     }
   };
 
+  const deliveryFeeTotal = new Set(cart.map(i => i.restaurantId?._id || i.restaurantId)).size * 2.50;
+
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
-      <View className="px-6 py-4 flex-row items-center bg-white border-b border-gray-100">
-        <TouchableOpacity 
-          onPress={() => navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Main')} 
-          className="w-10 h-10 bg-gray-50 rounded-full items-center justify-center"
-        >
+      <View className="px-6 py-4 flex-row items-center border-b border-gray-100 bg-white">
+        <TouchableOpacity onPress={() => navigation.goBack()} className="w-10 h-10 bg-gray-50 rounded-full items-center justify-center">
           <ArrowLeft size={20} color="black" />
         </TouchableOpacity>
         <Text className="text-xl font-bold text-secondary ml-4">Checkout</Text>
@@ -107,148 +103,155 @@ const CheckoutScreen = ({ navigation }) => {
 
       <ScrollView className="flex-1 px-6 pt-6" showsVerticalScrollIndicator={false}>
         {/* Order Type */}
-        <Text className="text-lg font-bold text-secondary mb-4">Order Type</Text>
-        <View className="flex-row space-x-4 mb-8">
-          {['delivery', 'takeaway'].map(type => (
-            <TouchableOpacity 
-              key={type}
-              onPress={() => setOrderType(type)}
-              className={`flex-1 p-4 rounded-3xl items-center border capitalize ${orderType === type ? 'bg-secondary border-secondary' : 'bg-white border-gray-100'}`}
-            >
-              <Text className={`font-bold ${orderType === type ? 'text-white' : 'text-gray-500'}`}>{type}</Text>
-            </TouchableOpacity>
-          ))}
+        <Text className="text-base font-bold text-secondary mb-3">Order Type</Text>
+        <View className="flex-row mb-6 space-x-3">
+          <TouchableOpacity
+            onPress={() => setOrderType('delivery')}
+            className={`flex-1 p-4 rounded-2xl border flex-row items-center justify-center ${orderType === 'delivery' ? 'bg-primary border-primary' : 'bg-white border-gray-200'}`}
+          >
+            <Truck size={18} color={orderType === 'delivery' ? 'white' : 'gray'} />
+            <Text className={`ml-2 font-bold ${orderType === 'delivery' ? 'text-white' : 'text-gray-500'}`}>Delivery</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setOrderType('takeaway')}
+            className={`flex-1 p-4 rounded-2xl border flex-row items-center justify-center ${orderType === 'takeaway' ? 'bg-primary border-primary' : 'bg-white border-gray-200'}`}
+          >
+            <ShoppingBag size={18} color={orderType === 'takeaway' ? 'white' : 'gray'} />
+            <Text className={`ml-2 font-bold ${orderType === 'takeaway' ? 'text-white' : 'text-gray-500'}`}>Takeaway</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Delivery Address */}
         {orderType === 'delivery' && (
-          <View className="mb-8">
-            <Text className="text-lg font-bold text-secondary mb-4">Delivery Address</Text>
-            <View className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex-row items-center">
-              <View className="bg-orange-50 p-3 rounded-2xl">
-                <MapPin size={24} color="#ff5a5f" />
-              </View>
-              <TextInput 
-                className="flex-1 ml-4 text-secondary font-medium"
+          <View className="mb-6">
+            <Text className="text-base font-bold text-secondary mb-3">Delivery Address</Text>
+            <View className="bg-white flex-row items-center p-4 rounded-2xl border border-gray-200">
+              <MapPin size={18} color="#ff5a5f" />
+              <TextInput
+                className="flex-1 ml-3 text-secondary"
+                placeholder="Enter delivery address"
                 value={address}
                 onChangeText={setAddress}
-                placeholder="Enter delivery address"
-                multiline
               />
             </View>
           </View>
         )}
 
         {/* Payment Method */}
-        <Text className="text-lg font-bold text-secondary mb-4">Payment Method</Text>
-        <View className="space-y-4 mb-8">
-          <TouchableOpacity 
+        <Text className="text-base font-bold text-secondary mb-3">Payment Method</Text>
+        <View className="flex-row mb-4 space-x-3">
+          <TouchableOpacity
             onPress={() => setPaymentMethod('online')}
-            className={`p-5 rounded-[32px] border ${paymentMethod === 'online' ? 'bg-white border-primary border-2 shadow-sm' : 'bg-white border-gray-100'}`}
+            className={`flex-1 p-4 rounded-2xl border flex-row items-center justify-center ${paymentMethod === 'online' ? 'bg-primary border-primary' : 'bg-white border-gray-200'}`}
           >
-            <View className="flex-row items-center">
-              <CreditCard size={24} color={paymentMethod === 'online' ? '#ff5a5f' : 'gray'} />
-              <Text className={`ml-4 font-bold flex-1 ${paymentMethod === 'online' ? 'text-secondary' : 'text-gray-500'}`}>Online Pay</Text>
-              {paymentMethod === 'online' && <View className="w-5 h-5 bg-primary rounded-full items-center justify-center"><View className="w-2 h-2 bg-white rounded-full"/></View>}
-            </View>
-            
-            {paymentMethod === 'online' && (
-              <View className="mt-6 pt-6 border-t border-gray-100">
-                {user?.withdrawalMethods?.length > 0 && (
-                  <View className="mb-6">
-                    <Text className="text-[10px] font-bold text-gray-400 uppercase mb-4 tracking-widest">Saved Methods</Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
-                      {user.withdrawalMethods.map((method, idx) => (
-                        <TouchableOpacity 
-                          key={idx}
-                          onPress={() => {
-                            setSelectedSavedMethod(method);
-                            setOnlineProvider(method.type);
-                          }}
-                          className={`mr-3 p-4 rounded-2xl border-2 w-40 ${selectedSavedMethod === method ? 'bg-secondary border-secondary' : 'bg-gray-50 border-gray-100'}`}
-                        >
-                          <View className="flex-row justify-between items-start mb-2">
-                             {method.type === 'card' ? <CreditCard size={18} color={selectedSavedMethod === method ? 'white' : 'gray'} /> : <Globe size={18} color={selectedSavedMethod === method ? 'white' : 'gray'} />}
-                             {selectedSavedMethod === method && <CheckCircle size={16} color="white" />}
-                          </View>
-                          <Text className={`font-bold text-xs ${selectedSavedMethod === method ? 'text-white' : 'text-secondary'}`}>
-                            {method.type === 'card' ? `**** ${method.details.cardNumber.slice(-4)}` : 'PayPal'}
-                          </Text>
-                          <Text className={`text-[8px] mt-1 ${selectedSavedMethod === method ? 'text-white/60' : 'text-gray-400'}`}>
-                            {method.type === 'card' ? method.details.expiry : method.details.email}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                      <TouchableOpacity 
-                        onPress={() => setSelectedSavedMethod(null)}
-                        className={`p-4 rounded-2xl border-2 border-dashed w-40 items-center justify-center ${!selectedSavedMethod ? 'bg-secondary border-secondary' : 'bg-white border-gray-100'}`}
-                      >
-                        <Text className={`font-bold text-xs ${!selectedSavedMethod ? 'text-white' : 'text-gray-400'}`}>+ New Method</Text>
-                      </TouchableOpacity>
-                    </ScrollView>
-                  </View>
-                )}
-
-                {!selectedSavedMethod && (
-                  <View className="flex-row justify-around">
-                    <TouchableOpacity 
-                      onPress={() => setOnlineProvider('card')}
-                      className={`px-4 py-2 rounded-xl border ${onlineProvider === 'card' ? 'bg-secondary border-secondary' : 'bg-gray-50 border-gray-200'}`}
-                    >
-                      <Text className={`text-[10px] font-bold ${onlineProvider === 'card' ? 'text-white' : 'text-gray-500'}`}>CREDIT CARD</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                      onPress={() => setOnlineProvider('paypal')}
-                      className={`px-4 py-2 rounded-xl border ${onlineProvider === 'paypal' ? 'bg-secondary border-secondary' : 'bg-gray-50 border-gray-200'}`}
-                    >
-                      <Text className={`text-[10px] font-bold ${onlineProvider === 'paypal' ? 'text-white' : 'text-gray-500'}`}>PAYPAL</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </View>
-            )}
+            <CreditCard size={18} color={paymentMethod === 'online' ? 'white' : 'gray'} />
+            <Text className={`ml-2 font-bold ${paymentMethod === 'online' ? 'text-white' : 'text-gray-500'}`}>Online</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => setPaymentMethod('cash')}
-            className={`flex-row items-center p-4 rounded-3xl border ${paymentMethod === 'cash' ? 'bg-white border-primary border-2 shadow-sm' : 'bg-white border-gray-100'}`}
+            className={`flex-1 p-4 rounded-2xl border flex-row items-center justify-center ${paymentMethod === 'cash' ? 'bg-primary border-primary' : 'bg-white border-gray-200'}`}
           >
-            <Wallet size={24} color={paymentMethod === 'cash' ? '#ff5a5f' : 'gray'} />
-            <Text className={`ml-4 font-bold flex-1 ${paymentMethod === 'cash' ? 'text-secondary' : 'text-gray-500'}`}>
-              Cash on {orderType === 'delivery' ? 'Delivery' : 'Pickup'}
-            </Text>
-            {paymentMethod === 'cash' && <View className="w-5 h-5 bg-primary rounded-full items-center justify-center"><View className="w-2 h-2 bg-white rounded-full"/></View>}
+            <Wallet size={18} color={paymentMethod === 'cash' ? 'white' : 'gray'} />
+            <Text className={`ml-2 font-bold ${paymentMethod === 'cash' ? 'text-white' : 'text-gray-500'}`}>Cash</Text>
           </TouchableOpacity>
         </View>
 
+        {/* Online Provider Selection */}
+        {paymentMethod === 'online' && (
+          <View className="mb-6">
+            {/* Saved Methods */}
+            {user?.withdrawalMethods?.length > 0 && (
+              <View className="mb-4">
+                <Text className="text-sm font-semibold text-gray-500 mb-2">Saved Methods</Text>
+                {user.withdrawalMethods.map((method, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => setSelectedSavedMethod(method)}
+                    className={`flex-row items-center p-4 rounded-2xl border mb-2 ${selectedSavedMethod === method ? 'border-primary bg-primary/5' : 'border-gray-200 bg-white'}`}
+                  >
+                    {method.type === 'card' ? (
+                      <CreditCard size={18} color={selectedSavedMethod === method ? '#ff5a5f' : 'gray'} />
+                    ) : (
+                      <Globe size={18} color={selectedSavedMethod === method ? '#ff5a5f' : 'gray'} />
+                    )}
+                    <View className="ml-3">
+                      <Text className={`font-bold ${selectedSavedMethod === method ? 'text-primary' : 'text-secondary'}`}>
+                        {method.type === 'card' ? `Card ending in ${method.details?.cardNumber?.slice(-4) || '****'}` : `PayPal: ${method.details?.email}`}
+                      </Text>
+                    </View>
+                    {selectedSavedMethod === method && <CheckCircle size={18} color="#ff5a5f" style={{ marginLeft: 'auto' }} />}
+                  </TouchableOpacity>
+                ))}
+                <TouchableOpacity onPress={() => setSelectedSavedMethod(null)}>
+                  <Text className="text-primary text-sm font-semibold mt-1">+ Use a new method</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* New Method Selection */}
+            {!selectedSavedMethod && (
+              <View className="flex-row space-x-3">
+                <TouchableOpacity
+                  onPress={() => setOnlineProvider('card')}
+                  className={`flex-1 p-4 rounded-2xl border flex-row items-center justify-center ${onlineProvider === 'card' ? 'bg-secondary border-secondary' : 'bg-white border-gray-200'}`}
+                >
+                  <CreditCard size={18} color={onlineProvider === 'card' ? 'white' : 'gray'} />
+                  <Text className={`ml-2 font-bold ${onlineProvider === 'card' ? 'text-white' : 'text-gray-500'}`}>Card</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setOnlineProvider('paypal')}
+                  className={`flex-1 p-4 rounded-2xl border flex-row items-center justify-center ${onlineProvider === 'paypal' ? 'bg-secondary border-secondary' : 'bg-white border-gray-200'}`}
+                >
+                  <Globe size={18} color={onlineProvider === 'paypal' ? 'white' : 'gray'} />
+                  <Text className={`ml-2 font-bold ${onlineProvider === 'paypal' ? 'text-white' : 'text-gray-500'}`}>PayPal</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        )}
+
         {/* Order Summary */}
-        <View className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-40">
-          <Text className="text-lg font-bold text-secondary mb-4">Final Summary</Text>
-          <View className="flex-row justify-between mb-2">
-            <Text className="text-gray-500">Items ({cart.reduce((sum, i) => sum + i.quantity, 0)})</Text>
-            <Text className="text-secondary font-bold">${cartTotal.toFixed(2)}</Text>
-          </View>
-          <View className="flex-row justify-between mb-2">
-            <Text className="text-gray-500">Delivery Fee ({new Set(cart.map(i => i.restaurantId?._id || i.restaurantId)).size} x $2.50)</Text>
-            <Text className="text-secondary font-bold">${(new Set(cart.map(i => i.restaurantId?._id || i.restaurantId)).size * 2.50).toFixed(2)}</Text>
-          </View>
-          <View className="flex-row justify-between mt-4 pt-4 border-t border-gray-100">
-            <Text className="text-lg font-bold text-secondary">Payable Amount</Text>
-            <Text className="text-xl font-bold text-primary">${(cartTotal + (new Set(cart.map(i => i.restaurantId?._id || i.restaurantId)).size * 2.50)).toFixed(2)}</Text>
+        <View className="bg-white p-5 rounded-3xl border border-gray-100 mb-8">
+          <Text className="text-base font-bold text-secondary mb-4">Order Summary</Text>
+          {cart.map((item) => (
+            <View key={item._id} className="flex-row justify-between mb-2">
+              <Text className="text-gray-500">{item.name} x{item.quantity}</Text>
+              <Text className="font-semibold">${(item.price * item.quantity).toFixed(2)}</Text>
+            </View>
+          ))}
+          <View className="border-t border-gray-100 mt-2 pt-2">
+            <View className="flex-row justify-between mb-1">
+              <Text className="text-gray-500">Subtotal</Text>
+              <Text className="font-semibold">${cartTotal.toFixed(2)}</Text>
+            </View>
+            {orderType === 'delivery' && (
+              <View className="flex-row justify-between mb-1">
+                <Text className="text-gray-500">Delivery Fee</Text>
+                <Text className="font-semibold">${deliveryFeeTotal.toFixed(2)}</Text>
+              </View>
+            )}
+            <View className="flex-row justify-between mt-2">
+              <Text className="font-bold text-secondary">Total</Text>
+              <Text className="font-bold text-primary text-lg">
+                ${(cartTotal + (orderType === 'delivery' ? deliveryFeeTotal : 0)).toFixed(2)}
+              </Text>
+            </View>
           </View>
         </View>
       </ScrollView>
 
-      <View className="absolute bottom-10 left-6 right-6">
-        <TouchableOpacity 
+      <View className="px-6 pb-6 bg-white border-t border-gray-100">
+        <TouchableOpacity
           onPress={handlePlaceOrder}
           disabled={loading}
-          className="bg-primary flex-row items-center justify-center p-5 rounded-3xl shadow-2xl shadow-primary/40"
+          className="bg-primary py-4 rounded-2xl items-center mt-4"
         >
           {loading ? (
             <ActivityIndicator color="white" />
           ) : (
-            <Text className="text-white font-bold text-lg">Confirm & Pay ${(cartTotal + (new Set(cart.map(i => i.restaurantId?._id || i.restaurantId)).size * 2.50)).toFixed(2)}</Text>
+            <Text className="text-white font-bold text-lg">
+              {paymentMethod === 'online' ? 'Proceed to Payment' : 'Place Order'}
+            </Text>
           )}
         </TouchableOpacity>
       </View>
