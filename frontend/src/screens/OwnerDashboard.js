@@ -303,7 +303,7 @@ const OwnerDashboard = ({ navigation, route }) => {
     try {
       setLoading(true);
       const resResponse = await api.get('/restaurants');
-      const myRes = resResponse.data.find(r => r.ownerId === user._id);
+      const myRes = resResponse.data.find(r => r.ownerId.toString() === user._id.toString());
       
       if (myRes) {
         setRestaurant(myRes);
@@ -392,8 +392,8 @@ const OwnerDashboard = ({ navigation, route }) => {
         price: parseFloat(price),
         category,
         description,
-        ingredients: ingredients.split(',').map(i => i.trim()),
-        preparationTime: parseInt(preparationTime),
+        ingredients: ingredients.split(',').map(i => i.trim()).filter(i => i !== ''),
+        preparationTime: parseInt(preparationTime) || 15,
         restaurantId: restaurant._id,
         image: formData.image
       };

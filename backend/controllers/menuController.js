@@ -10,7 +10,8 @@ const { getNewFoodTemplate, getDeletedFoodTemplate } = require('../utils/emailTe
 const createMenuItem = async (req, res, next) => {
   const { name, description, price, category, image, restaurantId, preparationTime, ingredients } = req.body;
 
-  if (!name || !description || !price || !category || !image || !restaurantId || !ingredients) {
+  // Ensure all required fields are present (0 is a valid price/preparationTime)
+  if (!name || !description || price === undefined || !category || !image || !restaurantId || !ingredients) {
     res.status(400);
     throw new Error('Please provide all required fields (name, description, price, category, image, restaurantId, ingredients)');
   }
@@ -40,41 +41,32 @@ const createMenuItem = async (req, res, next) => {
 
     const createdMenuItem = await menuItem.save();
 
-    // Send email notifications to opted-in users
-    console.log('📧 EMAIL_USER loaded:', process.env.EMAIL_USER ? process.env.EMAIL_USER : '❌ MISSING');
-    const optedInUsers = await User.find({ receiveEmailNotifications: true });
-    console.log(`📋 Opted-in users found: ${optedInUsers.length}`);
+    // Send email notifications to opted-in users (non-blocking for performance)
+    User.find({ receiveEmailNotifications: true }).then(optedInUsers => {
+      if (optedInUsers.length > 0) {
+        const backendUrl = `${req.protocol}://${req.get('host')}`;
+        const redirectUrl = `${backendUrl}/api/menu/deeplink/${createdMenuItem._id}`;
 
-    if (optedInUsers.length > 0) {
-      const backendUrl = `${req.protocol}://${req.get('host')}`;
-      const redirectUrl = `${backendUrl}/api/menu/deeplink/${createdMenuItem._id}`;
+        const emailHtml = getNewFoodTemplate(
+          name, 
+          restaurant.name, 
+          category, 
+          price, 
+          description, 
+          image, 
+          process.env.FRONTEND_URL || 'http://localhost:3000',
+          redirectUrl
+        );
 
-      const emailHtml = getNewFoodTemplate(
-        name, 
-        restaurant.name, 
-        category, 
-        price, 
-        description, 
-        image, 
-        process.env.FRONTEND_URL || 'http://localhost:3000',
-        redirectUrl
-      );
-
-      for (const user of optedInUsers) {
-        console.log(`📨 Sending beautiful email to: ${user.email}`);
-        try {
-          await sendEmail({
+        optedInUsers.forEach(user => {
+          sendEmail({
             email: user.email,
             subject: `✨ New Delight: ${name} is now at ${restaurant.name}!`,
             html: emailHtml,
-          });
-        } catch (err) {
-          console.error(`❌ Email failed for ${user.email}:`, err.message);
-        }
+          }).catch(err => console.error(`❌ Email failed for ${user.email}:`, err.message));
+        });
       }
-    } else {
-      console.log('ℹ️ No users have email notifications enabled.');
-    }
+    }).catch(err => console.error('❌ Error finding opted-in users:', err.message));
 
 
     res.status(201).json(createdMenuItem);
@@ -145,14 +137,14 @@ const updateMenuItem = async (req, res, next) => {
         throw new Error('Not authorized to update this menu item');
       }
 
-      menuItem.name = name || menuItem.name;
-      menuItem.description = description || menuItem.description;
-      menuItem.price = price || menuItem.price;
-      menuItem.category = category || menuItem.category;
-      menuItem.image = image || menuItem.image;
+      menuItem.name = name !== undefined ? name : menuItem.name;
+      menuItem.description = description !== undefined ? description : menuItem.description;
+      menuItem.price = price !== undefined ? price : menuItem.price;
+      menuItem.category = category !== undefined ? category : menuItem.category;
+      menuItem.image = image !== undefined ? image : menuItem.image;
       menuItem.isAvailable = isAvailable !== undefined ? isAvailable : menuItem.isAvailable;
-      menuItem.preparationTime = preparationTime || menuItem.preparationTime;
-      menuItem.ingredients = ingredients || menuItem.ingredients;
+      menuItem.preparationTime = preparationTime !== undefined ? preparationTime : menuItem.preparationTime;
+      menuItem.ingredients = ingredients !== undefined ? ingredients : menuItem.ingredients;
 
       const updatedMenuItem = await menuItem.save();
       res.json(updatedMenuItem);
@@ -184,23 +176,19 @@ const deleteMenuItem = async (req, res, next) => {
 
       await menuItem.deleteOne();
 
-      // Send deletion notifications to opted-in users
-      const optedInUsers = await User.find({ receiveEmailNotifications: true });
-      if (optedInUsers.length > 0) {
-        const deletionHtml = getDeletedFoodTemplate(itemName, restaurantName);
-        
-        for (const user of optedInUsers) {
-          try {
-            await sendEmail({
+      // Send deletion notifications to opted-in users (non-blocking)
+      User.find({ receiveEmailNotifications: true }).then(optedInUsers => {
+        if (optedInUsers.length > 0) {
+          const deletionHtml = getDeletedFoodTemplate(itemName, restaurantName);
+          optedInUsers.forEach(user => {
+            sendEmail({
               email: user.email,
               subject: `Menu Update: Farewell to ${itemName}`,
               html: deletionHtml,
-            });
-          } catch (err) {
-            console.error(`❌ Deletion email failed for ${user.email}:`, err.message);
-          }
+            }).catch(err => console.error(`❌ Deletion email failed for ${user.email}:`, err.message));
+          });
         }
-      }
+      }).catch(err => console.error('❌ Error finding opted-in users for deletion:', err.message));
 
       res.json({ message: 'Menu item removed' });
     } else {
