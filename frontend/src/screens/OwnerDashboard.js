@@ -337,7 +337,7 @@ const OwnerDashboard = ({ navigation, route }) => {
 
   const handleWithdraw = async () => {
     if (!withdrawAmount || Number(withdrawAmount) < 60) {
-      Alert.alert('Error', 'Minimum withdrawal amount is $60.00');
+      Alert.alert('Error', 'Minimum withdrawal amount is Rs. 60.00');
       return;
     }
     if (Number(withdrawAmount) > stats.totalEarnings) {
@@ -646,7 +646,7 @@ const OwnerDashboard = ({ navigation, route }) => {
           </View>
         </View>
         <View className="flex-row justify-between items-end">
-          <Text className="text-primary font-bold text-lg">${item.price}</Text>
+          <Text className="text-primary font-bold text-lg">Rs. {item.price}</Text>
           <View className="flex-row items-center">
             <Star size={12} color="#ffb800" fill="#ffb800" />
             <Text className="text-[10px] font-bold text-gray-400 ml-1">{item.rating || '0.0'}</Text>
@@ -814,7 +814,7 @@ const OwnerDashboard = ({ navigation, route }) => {
                <TouchableOpacity 
                 onPress={() => {
                   if (stats.totalEarnings < 60) {
-                    Alert.alert('Insufficient Balance', 'Minimum withdrawal is $60.00');
+                    Alert.alert('Insufficient Balance', 'Minimum withdrawal is Rs. 60.00');
                     return;
                   }
                   setIsWithdrawModalVisible(true);
@@ -1140,7 +1140,7 @@ const OwnerDashboard = ({ navigation, route }) => {
                   <Text className="text-4xl font-black text-emerald-600">${(stats?.totalEarnings || 0).toFixed(2)}</Text>
                 </View>
 
-                <Text className="text-gray-500 mb-3 ml-1 text-[10px] font-bold uppercase">Enter Amount (Min $60.00)</Text>
+                <Text className="text-gray-500 mb-3 ml-1 text-[10px] font-bold uppercase">Enter Amount (Min Rs. 60.00)</Text>
                 <TextInput 
                   className="bg-gray-50 p-6 rounded-3xl border border-gray-100 text-2xl font-black text-secondary mb-8 text-center"
                   placeholder="0.00"
@@ -1199,7 +1199,7 @@ const OwnerDashboard = ({ navigation, route }) => {
                         {w.method === 'card' ? <CreditCard size={14} color="gray" /> : <Globe size={14} color="gray" />}
                         <Text className="text-gray-400 text-[10px] font-bold uppercase ml-1">{w.method}</Text>
                       </View>
-                      <Text className="font-bold text-secondary text-lg">${w.amount.toFixed(2)}</Text>
+                      <Text className="font-bold text-secondary text-lg">Rs. {w.amount.toFixed(2)}</Text>
                       <Text className="text-gray-400 text-[10px] mt-1">{new Date(w.createdAt).toLocaleDateString()}</Text>
                     </View>
                     <View className="bg-emerald-50 px-3 py-1 rounded-full">
@@ -1250,7 +1250,7 @@ const OwnerDashboard = ({ navigation, route }) => {
                     </View>
                     <View className="items-end">
                       <Text className="font-black text-xl text-gray-300">
-                        +${(order.totalAmount - (order.deliveryFee || 0)).toFixed(2)}
+                        +Rs. {(order.totalAmount - (order.deliveryFee || 0)).toFixed(2)}
                       </Text>
                     </View>
                   </View>

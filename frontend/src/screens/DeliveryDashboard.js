@@ -105,7 +105,7 @@ const DeliveryDashboard = ({ navigation, route }) => {
 
     const amt = parseFloat(withdrawAmount);
     if (isNaN(amt) || amt < 20) {
-      Alert.alert('Invalid Amount', 'Minimum withdrawal amount is $20.00');
+      Alert.alert('Invalid Amount', 'Minimum withdrawal amount is Rs. 20.00');
       return;
     }
 
@@ -383,7 +383,7 @@ const DeliveryDashboard = ({ navigation, route }) => {
           <Text className="font-bold text-secondary text-lg">Order #{order._id.substring(0, 8)}</Text>
           <Text className="text-gray-400 text-xs mt-1">{new Date(order.createdAt).toLocaleTimeString()}</Text>
         </View>
-        <Text className="text-primary font-black text-xl">${order.totalAmount}</Text>
+        <Text className="text-primary font-black text-xl">Rs. {order.totalAmount}</Text>
       </View>
 
       <View className="bg-gray-50 p-4 rounded-3xl mb-5">
@@ -654,7 +654,7 @@ const DeliveryDashboard = ({ navigation, route }) => {
                    <View className="flex-row justify-between items-start mb-6">
                       <View>
                         <Text className="text-white/60 text-[10px] font-bold uppercase tracking-[2px] mb-1">Available Balance</Text>
-                        <Text className="text-4xl font-black text-white">${stats.totalEarnings.toFixed(2)}</Text>
+                        <Text className="text-4xl font-black text-white">Rs. {stats.totalEarnings.toFixed(2)}</Text>
                       </View>
                       <View className="flex-row space-x-2">
                         <TouchableOpacity onPress={() => setIsFullLogsModalVisible(true)} className="bg-white/10 p-3 rounded-2xl">
@@ -669,7 +669,7 @@ const DeliveryDashboard = ({ navigation, route }) => {
                    <TouchableOpacity 
                     onPress={() => {
                       if (stats.totalEarnings < 20) {
-                        Alert.alert('Minimum Balance Required', 'You need to earn at least $20.00 (Received) to request a withdrawal.');
+                        Alert.alert('Minimum Balance Required', 'You need to earn at least Rs. 20.00 (Received) to request a withdrawal.');
                         return;
                       }
                       if (!user.withdrawalMethods || user.withdrawalMethods.length === 0) {
@@ -1022,7 +1022,7 @@ const DeliveryDashboard = ({ navigation, route }) => {
                       autoFocus
                     />
                   </View>
-                  <Text className="text-gray-400 text-[8px] text-center mt-3 font-bold uppercase">Enter amount to withdraw (Min $20.00)</Text>
+                  <Text className="text-gray-400 text-[8px] text-center mt-3 font-bold uppercase">Enter amount to withdraw (Min Rs. 20.00)</Text>
                 </View>
 
                 <Text className="font-bold text-secondary text-sm mb-4 ml-1">Select Destination</Text>
@@ -1069,7 +1069,7 @@ const DeliveryDashboard = ({ navigation, route }) => {
                 </View>
                 <Text className="text-3xl font-black text-secondary text-center mb-4">Payout Successful!</Text>
                 <Text className="text-gray-500 text-center mb-10 leading-6 px-10">
-                  Your withdrawal of <Text className="font-bold text-emerald-600">${stats.totalEarnings.toFixed(2)}</Text> to your <Text className="font-bold text-secondary">{selectedMethod?.type === 'card' ? 'Credit Card' : 'PayPal'}</Text> has been processed successfully.
+                  Your withdrawal of <Text className="font-bold text-emerald-600">Rs. {stats.totalEarnings.toFixed(2)}</Text> to your <Text className="font-bold text-secondary">{selectedMethod?.type === 'card' ? 'Credit Card' : 'PayPal'}</Text> has been processed successfully.
                 </Text>
                 <TouchableOpacity 
                   onPress={() => {
