@@ -724,7 +724,7 @@ const DeliveryDashboard = ({ navigation, route }) => {
                     </View>
                     <View className="items-end">
                       <Text className={`font-black size-xl ${order.deliveryFeeStatus === 'paid' ? 'text-emerald-500' : 'text-orange-500'}`}>
-                        +${(order.deliveryFee || 0).toFixed(2)}
+                        +Rs. {(order.deliveryFee || 0).toFixed(2)}
                       </Text>
                       <View className={`px-2 py-1 rounded-lg mt-1 ${order.deliveryFeeStatus === 'paid' ? 'bg-emerald-50' : 'bg-orange-50'}`}>
                         <Text className={`text-[8px] font-bold uppercase ${order.deliveryFeeStatus === 'paid' ? 'text-emerald-600' : 'text-orange-600'}`}>
@@ -1010,7 +1010,7 @@ const DeliveryDashboard = ({ navigation, route }) => {
                 </View>
 
                 <View className="bg-gray-50 p-6 rounded-[32px] mb-8 border border-gray-100">
-                  <Text className="text-gray-400 text-center text-[10px] font-bold uppercase mb-2">Wallet Balance: ${stats.totalEarnings.toFixed(2)}</Text>
+                  <Text className="text-gray-400 text-center text-[10px] font-bold uppercase mb-2">Wallet Balance: Rs. {stats.totalEarnings.toFixed(2)}</Text>
                   <View className="flex-row items-center justify-center bg-white p-4 rounded-2xl border border-gray-100">
                     <DollarSign size={24} color="#059669" />
                     <TextInput 
@@ -1116,7 +1116,7 @@ const DeliveryDashboard = ({ navigation, route }) => {
                       </View>
                     </View>
                     <View className="items-end">
-                      <Text className="font-black text-red-500 text-lg">-${w.amount.toFixed(2)}</Text>
+                      <Text className="font-black text-red-500 text-lg">-Rs. {w.amount.toFixed(2)}</Text>
                       <Text className="text-emerald-600 text-[8px] font-bold uppercase bg-emerald-50 px-2 py-1 rounded-md mt-1">Success</Text>
                     </View>
                   </View>
@@ -1164,7 +1164,7 @@ const DeliveryDashboard = ({ navigation, route }) => {
                     </View>
                     <View className="items-end">
                       <Text className="font-black size-xl text-gray-300">
-                        +${(order.deliveryFee || 0).toFixed(2)}
+                        +Rs. {(order.deliveryFee || 0).toFixed(2)}
                       </Text>
                     </View>
                   </View>

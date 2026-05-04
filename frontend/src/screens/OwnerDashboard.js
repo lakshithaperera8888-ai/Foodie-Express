@@ -700,7 +700,7 @@ const OwnerDashboard = ({ navigation, route }) => {
           </View>
         </View>
         <Text className="font-black text-emerald-500 text-xl">
-          +${(item.deliveryFeeStatus === 'pending' ? item.totalAmount : (item.totalAmount - (item.deliveryFee || 0))).toFixed(2)}
+          +Rs. {(item.deliveryFeeStatus === 'pending' ? item.totalAmount : (item.totalAmount - (item.deliveryFee || 0))).toFixed(2)}
         </Text>
       </View>
 
@@ -709,7 +709,7 @@ const OwnerDashboard = ({ navigation, route }) => {
           <View>
              <Text className="text-[8px] text-gray-400 font-bold uppercase tracking-widest">Driver Fee</Text>
              <Text className={`font-bold text-sm ${item.deliveryFeeStatus === 'paid' ? 'text-emerald-600' : 'text-orange-500'}`}>
-                ${(item.deliveryFee || 0).toFixed(2)} {item.deliveryFeeStatus === 'paid' ? '• Paid' : ''}
+                Rs. {(item.deliveryFee || 0).toFixed(2)} {item.deliveryFeeStatus === 'paid' ? '• Paid' : ''}
              </Text>
           </View>
           {item.deliveryFeeStatus === 'pending' && item.orderStatus === 'delivered' && (
@@ -844,7 +844,7 @@ const OwnerDashboard = ({ navigation, route }) => {
                   <View>
                     <Text className="text-[8px] text-gray-400 font-bold uppercase">Pending Fees</Text>
                     <Text className="text-secondary font-black text-sm">
-                      ${stats.history.filter(o => o.deliveryFeeStatus === 'pending').reduce((sum, o) => sum + (o.deliveryFee || 0), 0).toFixed(2)}
+                      Rs. {stats.history.filter(o => o.deliveryFeeStatus === 'pending').reduce((sum, o) => sum + (o.deliveryFee || 0), 0).toFixed(2)}
                     </Text>
                   </View>
                </View>
