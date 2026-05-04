@@ -110,7 +110,7 @@ const DeliveryDashboard = ({ navigation, route }) => {
     }
 
     if (amt > stats.totalEarnings) {
-      Alert.alert('Insufficient Balance', `You can only withdraw up to $${stats.totalEarnings.toFixed(2)}`);
+      Alert.alert('Insufficient Balance', `You can only withdraw up to Rs. ${stats.totalEarnings.toFixed(2)}`);
       return;
     }
 
