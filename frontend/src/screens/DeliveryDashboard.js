@@ -696,7 +696,7 @@ const DeliveryDashboard = ({ navigation, route }) => {
                       </View>
                       <View>
                         <Text className="text-[8px] text-gray-400 font-bold uppercase">Pending</Text>
-                        <Text className="text-secondary font-black text-sm">${(stats.pendingEarnings || 0).toFixed(2)}</Text>
+                        <Text className="text-secondary font-black text-sm">Rs. {(stats.pendingEarnings || 0).toFixed(2)}</Text>
                       </View>
                    </View>
                    {stats.totalEarnings < 20 && (
@@ -706,7 +706,7 @@ const DeliveryDashboard = ({ navigation, route }) => {
                         </View>
                         <View>
                           <Text className="text-[8px] text-gray-400 font-bold uppercase">To Unlock</Text>
-                          <Text className="text-secondary font-black text-sm">${(20 - stats.totalEarnings).toFixed(2)}</Text>
+                          <Text className="text-secondary font-black text-sm">Rs. {(20 - stats.totalEarnings).toFixed(2)}</Text>
                         </View>
                      </View>
                    )}
