@@ -411,7 +411,8 @@ const OwnerDashboard = ({ navigation, route }) => {
       setFormData({ name: '', price: '', category: '', description: '', ingredients: '', preparationTime: '15', image: '' });
       fetchData();
     } catch (error) {
-      Alert.alert('Error', 'Failed to save menu item');
+      console.error('Save item error:', error.response?.data || error);
+      Alert.alert('Error', error.response?.data?.message || 'Failed to save menu item');
     }
   };
 
@@ -423,7 +424,8 @@ const OwnerDashboard = ({ navigation, route }) => {
           await api.delete(`/menu/${id}`);
           fetchData();
         } catch (error) {
-          Alert.alert('Error', 'Failed to delete');
+          console.error('Delete item error:', error.response?.data || error);
+          Alert.alert('Error', error.response?.data?.message || 'Failed to delete');
         }
       }}
     ]);
@@ -797,7 +799,7 @@ const OwnerDashboard = ({ navigation, route }) => {
                <View className="flex-row justify-between items-start mb-6">
                   <View>
                     <Text className="text-white/60 text-[10px] font-bold uppercase tracking-[2px] mb-1">Available Funds</Text>
-                    <Text className="text-4xl font-black text-white">${stats.totalEarnings.toFixed(2)}</Text>
+                    <Text className="text-4xl font-black text-white">${(stats?.totalEarnings || 0).toFixed(2)}</Text>
                   </View>
                   <View className="flex-row space-x-2">
                     <TouchableOpacity onPress={() => setIsFullLogsModalVisible(true)} className="bg-white/10 p-3 rounded-2xl">
@@ -832,7 +834,7 @@ const OwnerDashboard = ({ navigation, route }) => {
                   </View>
                   <View>
                     <Text className="text-[8px] text-gray-400 font-bold uppercase">Lifetime</Text>
-                    <Text className="text-secondary font-black text-sm">${stats.lifetimeEarnings.toFixed(2)}</Text>
+                    <Text className="text-secondary font-black text-sm">${(stats?.lifetimeEarnings || 0).toFixed(2)}</Text>
                   </View>
                </View>
                <View className="flex-1 bg-white p-4 rounded-3xl border border-gray-100 shadow-sm flex-row items-center">
@@ -1135,7 +1137,7 @@ const OwnerDashboard = ({ navigation, route }) => {
               <View>
                 <View className="bg-gray-50 p-8 rounded-[40px] mb-8 border border-gray-100 items-center">
                   <Text className="text-gray-400 text-[10px] font-bold uppercase mb-2">Available to Withdraw</Text>
-                  <Text className="text-4xl font-black text-emerald-600">${stats.totalEarnings.toFixed(2)}</Text>
+                  <Text className="text-4xl font-black text-emerald-600">${(stats?.totalEarnings || 0).toFixed(2)}</Text>
                 </View>
 
                 <Text className="text-gray-500 mb-3 ml-1 text-[10px] font-bold uppercase">Enter Amount (Min $60.00)</Text>
