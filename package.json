@@ -1,0 +1,13 @@
+{
+  "name": "foodie-express-monorepo",
+  "version": "1.0.0",
+  "description": "Root package.json for Railway deployment",
+  "private": true,
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "install": "cd backend && npm install",
+    "start": "cd backend && node server.js"
+  }
+}
